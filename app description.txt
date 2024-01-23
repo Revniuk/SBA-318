@@ -1,0 +1,29 @@
+App Description: Tilda Dolls for Veterans
+Welcome to the "Tilda Dolls for Veterans" app – a heartwarming initiative to support veterans' medical needs and rehabilitation. This Node and Express-powered application provides a seamless platform for customers to purchase Tilda dolls, each dedicated to a specific veteran. 
+Overview of the features:
+1. Tilda Doll Selection:
+Customers can browse through a selection of Tilda dolls, each associated with a unique veteran.
+Each doll represents a heartfelt contribution towards a veteran's medical needs and rehabilitation.
+2. Donation System:
+The app collects payments for Tilda doll purchases into a joint account.
+Transparency is maintained by providing a table detailing the number of dolls sold, the corresponding amount allocated to each veteran, and the shipping addresses for doll deliveries.
+3. Veteran Allocation Table & Real-time Updates:
+A clear and organized table displays the types of dolls sold, the amount of money allocated for each veteran, and the number of dolls sold on behalf of each veteran.
+Real-time updates on the webpage ensure customers can see the immediate impact of their contributions on individual veterans.
+4. User-Friendly Experience:
+The app offers an intuitive and user-friendly interface, making it easy for customers to navigate, select dolls, and make their contributions.
+Customers will be prompted to enter their shipping address during the purchase process to ensure the doll is shipped directly to them.
+5. Secure Transactions:
+Security is a top priority. The app ensures the safety of customer transactions, protects sensitive information, and guarantees a secure shopping experience.
+6. Order Confirmation & Impact Display:
+After a customer makes a purchase, an order confirmation page will reflect the transaction number, total number of dolls sold, a customer’s shipping  address and the corresponding amount collected.
+The webpage dynamically updates to showcase the collective impact of customer contributions.
+
+7. Dedicated to Veterans:
+"Tilda Dolls for Veterans" is a testament to the community's support for those who have served our country. It aims to make a meaningful difference in the lives of veterans facing medical challenges.
+How it Works:
+	Browse Dolls: Explore the collection of Tilda dolls and learn about the veterans they represent.
+	Make a Purchase: Select your desired doll(s), enter your shipping address, and make a secure payment to contribute to the joint account.
+	Track Impact: Check the dynamic webpage updates to see the immediate impact of your contribution on individual veterans.
+	Spread the Word: Share the app with friends and family to maximize support for veterans.
+Join us in making a positive impact on the lives of veterans through the "Tilda Dolls for Veterans" app. Your support matters, and together we can make a difference in the lives of those who have bravely served their  country.

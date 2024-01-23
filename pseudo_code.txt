@@ -1,0 +1,48 @@
+# Initialization
+Initialize express app, database, and session management
+
+# Define Middleware
+Define loggerMiddleware
+Define authenticateMiddleware
+
+# Define Dummy Database
+Define veterans = []
+Define dollsSold = []
+Define jointAccount = 0
+
+# Define Routes
+
+# Home Page
+GET '/' 
+    Display Welcome Message
+
+# Doll Selection
+GET '/dolls'
+    Display Tilda dolls with information about associated veterans
+
+# Purchase Doll
+POST '/purchase'
+    Parse request data (doll type, shipping address, payment details)
+    Validate and process payment
+    Update jointAccount with the payment amount
+    Add a record to dollsSold with doll type, veteran association, and shipping address
+    Redirect to order confirmation page
+
+# Order Confirmation Page
+GET '/order/:transactionNumber'
+    Display transaction details, including transaction number, total dolls sold, customer's shipping address, and amount collected
+    Provide a link to track the impact page
+
+# Veteran Allocation Table (Track Impact)
+GET '/track-impact'
+    Display a table showing types of dolls sold, amount allocated for each veteran, and number of dolls sold for each veteran
+    Real-time updates for dynamic webpage changes
+
+# How it Works Page
+GET '/how-it-works'
+    Display information on how to browse dolls, make a purchase, track impact, and spread the word
+
+# Run the Express Server
+Listen on specified port
+
+# End of Pseudocode
