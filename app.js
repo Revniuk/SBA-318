@@ -29,11 +29,18 @@ const authenticateMiddleware = (req, res, next) => {
     res.status(401).send('Unauthorized. Please login.');
   }
 };
+# Error Handling Middleware
+const errorHandlerMiddleware = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Internal Server Error');
+};
 
 app.use(loggerMiddleware);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({ secret: 'your_secret_key', resave: true, saveUninitialized: true }));
+app.use(errorHandlerMiddleware);
+
 
 # Define Routes
 
@@ -88,3 +95,5 @@ app.get('/how-it-works', (req, res) => {
 app.listen(port, () => {
   console.log(`Tilda Dolls for Veterans server listening at http://localhost:${port}`);
 });
+
+
