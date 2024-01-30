@@ -36,16 +36,37 @@ class Veteran {
   }
 }
 
-class TildaDollsApp {
+class Database {
   constructor() {
-    this.app = express();
-    this.port = 3000;
-
-    // Database
     this.dolls = [];
     this.transactions = [];
     this.veterans = [];
     this.jointAccount = 0;
+  }
+
+  addDoll(doll) {
+    this.dolls.push(doll);
+  }
+
+  addTransaction(transaction) {
+    this.transactions.push(transaction);
+  }
+
+  addOrUpdateVeteran(veteran) {
+    const existingVeteran = this.veterans.find(v => v.veteranId === veteran.veteranId);
+    if (existingVeteran) {
+      existingVeteran.donationAllocation += veteran.donationAllocation;
+    } else {
+      this.veterans.push(veteran);
+    }
+  }
+}
+
+class TildaDollsApp {
+  constructor(database) {
+    this.app = express();
+    this.port = 3000;
+    this.database = database;
 
     // Middleware
     this.app.use(this.loggerMiddleware);
@@ -61,6 +82,9 @@ class TildaDollsApp {
     this.app.get('/order/:transactionNumber', this.authenticateMiddleware.bind(this), this.orderConfirmationPage.bind(this));
     this.app.get('/track-impact', this.authenticateMiddleware.bind(this), this.veteranAllocationTable.bind(this));
     this.app.get('/how-it-works', this.howItWorks.bind(this));
+    this.app.get('/api/dolls', this.exposeDolls.bind(this));
+    this.app.get('/api/transactions', this.exposeTransactions.bind(this));
+    this.app.get('/api/veterans', this.exposeVeterans.bind(this));
 
     // Server
     this.app.listen(this.port, () => {
@@ -89,50 +113,47 @@ class TildaDollsApp {
     res.status(500).send('Internal Server Error');
   }
 
-    // Routes
+  // Routes
   exposeDolls(req, res) {
-    res.json(this.dolls);
+    res.json(this.database.dolls);
   }
 
   exposeTransactions(req, res) {
-    res.json(this.transactions);
+    res.json(this.database.transactions);
   }
 
   exposeVeterans(req, res) {
-    res.json(this.veterans);
+    res.json(this.database.veterans);
   }
+
   homePage(req, res) {
     res.send('Welcome to Tilda Dolls for Veterans');
   }
 
   dollSelection(req, res) {
-    res.json(this.dolls);
+    res.json(this.database.dolls);
   }
 
   purchaseDoll(req, res) {
     const { dollType, shippingAddress, paymentDetails } = req.body;
 
-const tildaDollsApp = new TildaDollsApp();
-tildaDollsApp.app.get('/api/dolls', tildaDollsApp.exposeDolls.bind(tildaDollsApp));
-tildaDollsApp.app.get('/api/transactions', tildaDollsApp.exposeTransactions.bind(tildaDollsApp));
-tildaDollsApp.app.get('/api/veterans', tildaDollsApp.exposeVeterans.bind(tildaDollsApp));
     // Validate and process payment
     // Update jointAccount with the payment amount
-    this.jointAccount += /* Process payment amount */;
+    this.database.jointAccount += /* Payment amount */;
 
-    // Add a record to transactions
-    const transactionId = this.transactions.length + 1;
+    // Record a transaction
+    const transactionId = this.database.transactions.length + 1;
     const transaction = new Transaction(transactionId, req.session.user, dollType, shippingAddress, paymentDetails, /* Processed payment amount */);
-    this.transactions.push(transaction);
+    this.database.addTransaction(transaction);
 
     // Add or update veteran information
     const veteranId = /* Get veteran ID associated with dollType */;
-    const existingVeteran = this.veterans.find(v => v.veteranId === veteranId);
+    const existingVeteran = this.database.veterans.find(v => v.veteranId === veteranId);
     if (existingVeteran) {
       existingVeteran.donationAllocation += /* Processed payment amount */;
     } else {
       const veteran = new Veteran(veteranId, /* Veteran name */, /* Veteran medical needs */, /* Veteran rehabilitation details */, /* Processed payment amount */);
-      this.veterans.push(veteran);
+      this.database.addOrUpdateVeteran(veteran);
     }
 
     // Redirect to order confirmation page
@@ -141,12 +162,12 @@ tildaDollsApp.app.get('/api/veterans', tildaDollsApp.exposeVeterans.bind(tildaDo
 
   orderConfirmationPage(req, res) {
     const transactionId = parseInt(req.params.transactionNumber);
-    const transaction = this.transactions.find(t => t.transactionId === transactionId);
+    const transaction = this.database.transactions.find(t => t.transactionId === transactionId);
     res.json(transaction);
   }
 
   veteranAllocationTable(req, res) {
-    res.json(this.veterans);
+    res.json(this.database.veterans);
   }
 
   howItWorks(req, res) {
@@ -154,5 +175,8 @@ tildaDollsApp.app.get('/api/veterans', tildaDollsApp.exposeVeterans.bind(tildaDo
   }
 }
 
-// Create an instance of the TildaDollsApp class to start the application
-const tildaDollsApp = new TildaDollsApp();
+// Create an instance of the Database class
+const database = new Database();
+
+
+
