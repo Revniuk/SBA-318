@@ -92,15 +92,22 @@ class TildaDollsApp {
     this.database = database;
 
     // Middleware
-    this.app.use(this.loggerMiddleware);
+     this.app.use(this.loggerMiddleware);
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(cookieParser());
-    this.app.use(session({ secret: 'your_secret_key', resave: true, saveUninitialized: true }));
+    this.app.use(session({ secret: 'secret_key', resave: true, saveUninitialized: true }));
+    this.app.use(express.static('public')); // Serve static files from the 'public' directory
     this.app.use(this.errorHandlerMiddleware);
 
     // Routes
     this.app.get('/', this.homePage.bind(this));
-    this.app.get('/dolls', this.dollSelection.bind(this));
+      this.app.get('/dolls', this.dollSelection.bind(this));
+      this.app.get('/', this.homePage.bind(this));
+    this.app.get('/dolls', this.getAllDolls.bind(this));
+    this.app.post('/dolls', this.createDoll.bind(this));
+    this.app.get('/dolls/:dollId', this.getDollById.bind(this));
+    this.app.get('/transactions', this.getAllTransactions.bind(this));
+    this.app.get('/veterans', this.getAllVeterans.bind(this));
     this.app.post('/purchase', this.authenticateMiddleware.bind(this), this.makePurchase.bind(this));
     this.app.get('/order/:transactionNumber', this.authenticateMiddleware.bind(this), this.orderConfirmationPage.bind(this));
     this.app.get('/track-impact', this.authenticateMiddleware.bind(this), this.veteranAllocationTable.bind(this));
@@ -135,7 +142,38 @@ class TildaDollsApp {
       res.status(404).json({ message: 'Doll not found' });
     }
   }
-      
+      / POST route for creating a new doll
+  createDoll(req, res) {
+    const { dollId, dollType, description, imageUrl, price, veteranId } = req.body;
+    const doll = new Doll(dollId, dollType, description, imageUrl, price, veteranId);
+    this.database.addDoll(doll);
+    res.status(201).json({ message: 'Doll created successfully', doll });
+  }
+
+  // GET route for retrieving all dolls
+  getAllDolls(req, res) {
+    const { dollType } = req.query;
+
+    if (dollType) {
+      const filteredDolls = this.database.getDollsByType(dollType);
+      res.json(filteredDolls);
+    } else {
+      res.json(this.database.dolls);
+    }
+  }
+
+  // GET route for retrieving a specific doll by ID
+  getDollById(req, res) {
+    const dollId = req.params.dollId;
+    const doll = this.database.dolls.find(doll => doll.dollId === dollId);
+
+    if (doll) {
+      res.json(doll);
+    } else {
+      res.status(404).json({ message: 'Doll not found' });
+    }
+  }
+
       // Server
     this.app.listen(this.port, () => {
       console.log(`Tilda Dolls for Veterans server listening at http://localhost:${this.port}`);
