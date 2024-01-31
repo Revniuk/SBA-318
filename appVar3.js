@@ -60,6 +60,29 @@ class Database {
       this.veterans.push(veteran);
     }
   }
+    //Filter dolls based on query parameters
+  getFilteredDolls(queryParams) {
+    let filteredDolls = [...this.dolls];
+    
+    // Filter by doll type if query parameter is provided
+    if (queryParams.dollType) {
+      filteredDolls = filteredDolls.filter(doll => doll.dollType === queryParams.dollType);
+    }
+
+    return filteredDolls;
+  }
+    // One more  method for filtering dolls based on dollType
+  getDollsByType(dollType) {
+    return this.dolls.filter(doll => doll.dollType === dollType);
+  }
+}
+    // Handle filtered dolls request
+  getFilteredDolls(req, res) {
+    const queryParams = req.query;
+    const filteredDolls = this.database.getFilteredDolls(queryParams);
+    res.json(filteredDolls);
+  }
+}
 }
 
 class TildaDollsApp {
@@ -78,15 +101,42 @@ class TildaDollsApp {
     // Routes
     this.app.get('/', this.homePage.bind(this));
     this.app.get('/dolls', this.dollSelection.bind(this));
-    this.app.post('/purchase', this.authenticateMiddleware.bind(this), this.purchaseDoll.bind(this));
+    this.app.post('/purchase', this.authenticateMiddleware.bind(this), this.makePurchase.bind(this));
     this.app.get('/order/:transactionNumber', this.authenticateMiddleware.bind(this), this.orderConfirmationPage.bind(this));
     this.app.get('/track-impact', this.authenticateMiddleware.bind(this), this.veteranAllocationTable.bind(this));
     this.app.get('/how-it-works', this.howItWorks.bind(this));
     this.app.get('/api/dolls', this.exposeDolls.bind(this));
     this.app.get('/api/transactions', this.exposeTransactions.bind(this));
     this.app.get('/api/veterans', this.exposeVeterans.bind(this));
+    this.app.delete('/api/dolls/:dollId', this.deleteDoll.bind(this));
+    this.app.delete('/api/veterans/:veteranId', this.deleteVeteran.bind(this));
+    this.app.patch('/api/dolls/:dollId', this.updateDoll.bind(this));
+    this.app.put('/api/veterans/:veteranId', this.replaceVeteran.bind(this));
+    app.get('/api/dolls/filter', this.getFilteredDolls.bind(this));
+    exposeDolls(req, res) {
+    const { dollType } = req.query;
 
-    // Server
+    if (dollType) {
+      const filteredDolls = this.database.getDollsByType(dollType);
+      res.json(filteredDolls);
+    } else {
+      res.json(this.database.dolls);
+    }
+  }
+
+  // GET route for exposing a specific doll using route parameters
+  exposeDollById(req, res) {
+    const dollId = req.params.dollId;
+    const doll = this.database.dolls.find(doll => doll.dollId === dollId);
+
+    if (doll) {
+      res.json(doll);
+    } else {
+      res.status(404).json({ message: 'Doll not found' });
+    }
+  }
+      
+      // Server
     this.app.listen(this.port, () => {
       console.log(`Tilda Dolls for Veterans server listening at http://localhost:${this.port}`);
     });
@@ -134,7 +184,7 @@ class TildaDollsApp {
     res.json(this.database.dolls);
   }
 
-  purchaseDoll(req, res) {
+  makePurchase(req, res) {
     const { dollType, shippingAddress, paymentDetails } = req.body;
 
     // Validate and process payment
@@ -173,10 +223,79 @@ class TildaDollsApp {
   howItWorks(req, res) {
     res.send('How it Works');
   }
+
+  // DELETE route to delete a doll
+  deleteDoll(req, res) {
+    const dollId = req.params.dollId;
+    const dollIndex = this.database.dolls.findIndex(doll => doll.dollId === dollId);
+
+    if (dollIndex !== -1) {
+      // Remove the doll from the array
+      const deletedDoll = this.database.dolls.splice(dollIndex, 1)[0];
+      res.json({ message: 'Doll deleted successfully', doll: deletedDoll });
+    } else {
+      res.status(404).json({ message: 'Doll not found' });
+    }
+  }
+
+  // PATCH route to update a doll's information
+  updateDoll(req, res) {
+    const dollId = req.params.dollId;
+    const { dollType, description, imageUrl, price, veteranId } = req.body;
+
+    // Find the doll by dollId
+    const dollToUpdate = this.database.dolls.find(doll => doll.dollId === dollId);
+
+    if (dollToUpdate) {
+      // Update the doll's information
+      dollToUpdate.dollType = dollType || dollToUpdate.dollType;
+      dollToUpdate.description = description || dollToUpdate.description;
+      dollToUpdate.imageUrl = imageUrl || dollToUpdate.imageUrl;
+      dollToUpdate.price = price || dollToUpdate.price;
+      dollToUpdate.veteranId = veteranId || dollToUpdate.veteranId;
+
+      res.json({ message: 'Doll information updated successfully', doll: dollToUpdate });
+    } else {
+      res.status(404).json({ message: 'Doll not found' });
+    }
+  }
+
+  // PUT route to replace a veteran's information
+  replaceVeteran(req, res) {
+    const veteranId = req.params.veteranId;
+    const { name, medicalNeeds, rehabilitationDetails, donationAllocation } = req.body;
+    const veteranToReplace = this.database.veterans.find(veteran => veteran.veteranId === veteranId);
+
+    if (veteranToReplace) {
+      // Replace the veteran's information
+      veteranToReplace.name = name;
+      veteranToReplace.medicalNeeds = medicalNeeds;
+      veteranToReplace.rehabilitationDetails = rehabilitationDetails;
+      veteranToReplace.donationAllocation = donationAllocation;
+
+      res.json({ message: 'Veteran information replaced successfully', veteran: veteranToReplace });
+    } else {
+      res.status(404).json({ message: 'Veteran not found' });
+    }
+  }
+
+  // DELETE route to delete a veteran
+  deleteVeteran(req, res) {
+    const veteranId = req.params.veteranId;
+    const veteranIndex = this.database.veterans.findIndex(veteran => veteran.veteranId === veteranId);
+
+    if (veteranIndex !== -1) {
+      // Remove the veteran from the array
+      const deletedVeteran = this.database.veterans.splice(veteranIndex, 1)[0];
+      res.json({ message: 'Veteran deleted successfully', veteran: deletedVeteran });
+    } else {
+      res.status(404).json({ message: 'Veteran not found' });
+    }
+  }
 }
 
 // Create an instance of the Database class
 const database = new Database();
 
-
-
+// Create an instance of the TildaDollsApp class to start the application
+const tildaDollsApp = new TildaDollsApp(database);
